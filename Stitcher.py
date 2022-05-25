@@ -10,16 +10,17 @@ class Stitcher:
         self.isv3 = imutils.is_cv3()
         self.cachedH = None
 
-    def stitch(self, images, ratio=0.75, reprojThresh=4.0): # images is the list of two images
+    def stitch(self, images, raw_images, ratio=0.75, reprojThresh=4.0): # images is the list of two images
         # unpack the images
         (imageB, imageA) = images
+        (raw_imageB, raw_imageA) = raw_images
 
         # if the cached homography matrix is None, then need to apply keypoint matching to construct it.
         # The frames should not change across the videos so only need to keypoint match once at the start.
         if self.cachedH is None:
             # detect keypoints and extract
-            (kpsA, featuresA) = self.detectAndDescribe(imageA)
-            (kpsB, featuresB) = self.detectAndDescribe(imageB)
+            (kpsA, featuresA) = self.detectAndDescribe(raw_imageA)
+            (kpsB, featuresB) = self.detectAndDescribe(raw_imageB)
 
             # match features between the two images
             M = self.matchKeypoints(kpsA, kpsB, featuresA, featuresB, ratio, reprojThresh)
@@ -32,8 +33,10 @@ class Stitcher:
             self.cachedH = M[1]
 
         # apply a perspective transform to stitch the images together using the cached homography matrix
-        result = cv2.warpPerspective(imageA, self.cachedH, (imageA.shape[1] + imageB.shape[1], imageA.shape[0]))
-        result[0:imageB.shape[0], 0:imageB.shape[1]] = imageB
+        result = cv2.warpPerspective(raw_imageA, self.cachedH, (raw_imageA.shape[1] + raw_imageB.shape[1], raw_imageA.shape[0])) # warping the right hand image
+        #result = np.zeros((350,3840,3), np.uint8)
+        result[0:raw_imageB.shape[0], 0:raw_imageB.shape[1]] = raw_imageB
+        # print('this is working')
 
         # return the stitched image
         return result

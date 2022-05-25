@@ -9,7 +9,8 @@ import csv
 
 import Camera
 import Config
-from fcutils.file_io import utils
+from hmutils import file_utils
+# from fcutils.file_io import utils
 
 
 class Main(Camera.Camera, Config.Config):
@@ -24,20 +25,20 @@ class Main(Camera.Camera, Config.Config):
         # Checks if files exists already in that folder
         # Checks if we are overwriting anything
         # Check if exp folder exists and if it's empty
-        utils.check_create_folder(self.experiment_folder)
-        if not utils.check_folder_empty(self.experiment_folder):
+        file_utils.check_create_folder(self.experiment_folder)
+        if not file_utils.check_folder_empty(self.experiment_folder):
             print("\n\n!!! experiment folder is not empty, might risk overwriting stuff !!!\n\n")
 
         # Create files for videos
         if self.save_to_video:
-            self.video_files_names = [os.path.join(self.experiment_folder, "HM-" + self.experiment_name + "_cam{}".format(i) + "_" + self.trialnum + "{}".format(self.camera_config["video_format"])) for i in np.arange(self.camera_config["n_cameras"])]
+            self.video_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "{}".format(self.camera_config["video_format"])) for i, name in enumerate(self.camera_config["cam_names"])]
             #self.video_files_names = [os.path.join(self.experiment_folder, self.experiment_name + "_cam{}{}".format(i, self.camera_config["video_format"])) for i in np.arange(self.camera_config["n_cameras"])]
-            self.video_data_files_names = [os.path.join(self.experiment_folder, "HM-" + self.experiment_name + "_cam{}".format(i) + "_" + self.trialnum + "_VideoData") for i in np.arange(self.camera_config["n_cameras"])]
-            self.video_data_fps_files_names = [os.path.join(self.experiment_folder, "HM-" + self.experiment_name + "_cam{}".format(i) + "_" + self.trialnum + "_FPSData") for i in np.arange(self.camera_config["n_cameras"])]
+            self.video_data_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "_VideoData") for i, name in enumerate(self.camera_config["cam_names"])]
+            self.video_data_fps_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "_FPSData") for i, name in enumerate(self.camera_config["cam_names"])]
 
             # Check if they exist already
             for vid in self.video_files_names:
-                if utils.check_file_exists(vid) and not self.overwrite_files: raise FileExistsError(
+                if file_utils.check_file_exists(vid) and not self.overwrite_files: raise FileExistsError(
                     "Cannot overwrite video file: ", vid)
 
     def terminate_experiment(self):
@@ -88,8 +89,8 @@ class Main(Camera.Camera, Config.Config):
         # Start cameras and set them up`
         self.start_cameras()
 
-        # Start streaming videos
-        self.exp_start_time = time.time() * 1000  # experiment starting time in milliseconds # ** MOVED TO CAMERA.PY INTO STREAM_VIDEOS AND STREAM_VIDEOS_KEYBOARD BECAUSE RECORDING IS NOW CONDITIONAL
+        ## Start streaming videos
+        #self.exp_start_time = time.time() * 1000  # experiment starting time in milliseconds # ** MOVED TO CAMERA.PY INTO STREAM_VIDEOS AND STREAM_VIDEOS_KEYBOARD BECAUSE RECORDING IS NOW CONDITIONAL
 
         self.stream_videos_keyboard()  # choose between stream_videos() or stream_videos_keyboard()
         self.terminate_experiment()

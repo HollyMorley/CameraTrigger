@@ -75,28 +75,20 @@ stitcher = Stitcher()
 total = 0
 
 # iterate through videoframes
-frames1 = []
-frames2 = []
-result = []
-count = 0
 Stch = []
 with tqdm.tqdm(total=int(frame_count), position=0, leave=True) as pbar:
     while cap1.isOpened() or cap2.isOpened():
         ret1, frame1 = cap1.read()
         ret2, frame2 = cap2.read()
-        frame1 = imutils.resize(frame1, width=600, height=109)
-        frame2 = imutils.resize(frame2, width=600, height=109)
-        if ret1 == True:
-            frames1.append(frame1)
-            #cv2.imshow('Frame1', frame1)
-        if ret2 == True:
-            frames2.append(frame2)
-            #cv2.imshow('Frame2', frame2)
         if ret1 == True and ret2 == True:
-            stch = stitcher.stitch([frame1, frame2])
+            # resize images for stitching
+            frame1comp = imutils.resize(frame1, width=600, height=109)
+            frame2comp = imutils.resize(frame2, width=600, height=109)
+
+            # stich frames
+            stch = stitcher.stitch([frame1comp, frame2comp], [frame1, frame2])
             Stch.append(stch)
-        # count+=1
-        # print(count)
+
         if ret1 == False and ret2 == False:
             break
         if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -110,4 +102,9 @@ cv2.destroyAllWindows()
 stch_shape = Stch[0].shape # get shape of new stitched image
 stch_height = stch_shape[0]
 stch_width = stch_shape[1]
-new_frame = cv2.VideoWriter(r"C:\Experiment_development_and_testing\video_stitching_test\videos\20211006\test_stitch.avi", cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), FPS[0], [stch_width, stch_height])
+new_frame = cv2.VideoWriter(r"C:\Experiment_development_and_testing\video_stitching_test\videos\20211117\test_stitch.avi", cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), FPS[0], (stch_width, stch_height))
+
+for i in range(0, len(Stch)):
+    new_frame.write(Stch[i])
+
+new_frame.release()
