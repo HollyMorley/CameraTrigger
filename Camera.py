@@ -6,6 +6,7 @@ import os
 import datetime
 import serial
 import pypylon.pylon as py
+from pypylon import genicam
 import skvideo.io
 import cv2
 import time
@@ -14,7 +15,18 @@ import keyboard
 import csv
 import Config
 import re
+from datetime import datetime
 
+class SampleImageEventHandler(py.ImageEventHandler):
+    def OnImageGrabbed(self, camera, grabResult):
+        # The chunk data is attached to the grab result and can be accessed anywhere.
+
+        # Native parameter access:
+        # When using the device specific grab results the chunk data can be accessed
+        # via the members of the grab result data.
+        # if genicam.IsReadable(grabResult.ChunkTimestamp):
+        #     print("OnImageGrabbed: TimeStamp (Result) accessed via result member: ", grabResult.ChunkTimestamp.Value)
+        return
 
 class Camera():
     def __init__(self):
@@ -38,6 +50,7 @@ class Camera():
             self.cameras = py.InstantCameraArray(self.camera_config["n_cameras"])
 
     def get_camera_writers(self):
+        print("\n*******************************************************************\n")
         # Open FFMPEG camera writers if we are saving to video
         if self.save_to_video:
             for i, file_name in enumerate(self.video_files_names):
@@ -53,10 +66,12 @@ class Camera():
             self.cam_writers = {str(i): None for i in np.arange(self.camera_config["n_cameras"])}
 
     def setup_cameras(self):
+        print("\n*******************************************************************\n")
         # set up cameras
         for i, cam in enumerate(self.cameras):
             cam.Attach(self.tlFactory.CreateDevice(self.devices[i]))
             print("Using camera: ", cam.GetDeviceInfo().GetFriendlyName())
+            cam.RegisterImageEventHandler(SampleImageEventHandler(), py.RegistrationMode_Append, py.Cleanup_Delete)  # Register an image event handler that accesses the chunk data.
             cam.Open()
             cam.RegisterConfiguration(py.ConfigurationEventHandler(),
                                       py.RegistrationMode_ReplaceAll,
@@ -107,7 +122,7 @@ class Camera():
 
             # ? Trigger mode set up
             if self.camera_config["trigger_mode"]:
-                print('camera is triggering')
+                print('camera is set up and ready to be triggered')
                 # Triggering
                 if "front" in cam.GetDeviceInfo().GetFriendlyName():
                     cam.LineSelector.FromString('Line2')
@@ -129,6 +144,21 @@ class Camera():
             else:
                 print('camera is not triggering')
                 cam.TriggerMode.FromString("Off")
+
+            # Create static pool of node maps and enable chunks
+            cam.StaticChunkNodeMapPoolSize = cam.MaxNumBuffer.GetValue()
+            if genicam.IsWritable(cam.ChunkModeActive):
+                cam.ChunkModeActive = True
+            else:
+                raise py.RuntimeException("The camera doesn't support chunk features")
+
+            # Enable time stamp chunks.
+            cam.ChunkSelector = "Timestamp"
+            cam.ChunkEnable = True
+
+            # Enable CRC checksum chunks.
+            cam.ChunkSelector = "PayloadCRC16"
+            cam.ChunkEnable = True
 
             # Start grabbing + GRABBING OPTIONS
             cam.Open()
@@ -229,11 +259,15 @@ class Camera():
 
     def stream_videos_keyboard(self, max_frames=None):
         global start
-        initiate_recording = input("Press 'y' to start recording. Press '#' to stop")
+        initiate_recording = input("\n*******************************************************************\n \nIF all of the above details are correct...\nPress 'y' to start recording. Press '#' to stop")
         initiate_recording = initiate_recording.strip().lower()
         if initiate_recording == 'y':
             print('RECORDING STARTED')
             self.exp_start_time = time.time() * 1000  # experiment starting time in milliseconds
+
+            # create csv file to store timestamps in
+
+
             while True:
                 #perf_start = time.time()
                 try:
@@ -247,6 +281,14 @@ class Camera():
                     # ! Loop over each camera and get frames
                     grab = self.grab_frames()
                     #print('frame grabbed')
+
+                    # check if buffer containing chunk data has been received
+                    if py.PayloadType_ChunkData != grab.PayloadType:
+                        raise py.RuntimeException("Unexpected payload type received.")
+                    if grab.HasCRC() and grab.CheckCRC() == False:
+                        raise py.RuntimeException("Image was damaged!")
+                    #if genicam.IsReadable(grab.ChunkTimestamp):
+                    #    print("TimeStamp (Result): ", grab.ChunkTimestamp.Value)
 
                     # Update frame count
                     self.frame_count += 1
@@ -289,6 +331,7 @@ class Camera():
                 #print(loop_perf)
 
             # Close camera
+            for cam in self.cameras: cam.ChunkModeActive = False
             for cam in self.cameras: cam.Close()
             print("camera was closed")
 

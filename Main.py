@@ -9,9 +9,9 @@ import csv
 
 import Camera
 import Config
+import GetFileInfo as get
 from hmutils import file_utils
 # from fcutils.file_io import utils
-
 
 class Main(Camera.Camera, Config.Config):
 
@@ -21,6 +21,12 @@ class Main(Camera.Camera, Config.Config):
         #Camera.__init__(self)
 
     def setup_experiment_files(self):
+        # Get file information
+        # print("Enter the following details to set up experiment:")
+        # self.mouseID = input("Mouse ID number:")
+        # self.mousename = input("Mouse name:")
+        # self.expname = input("Experiment name:")
+
         # Takes care of creating a folder to keep the files of this experiment
         # Checks if files exists already in that folder
         # Checks if we are overwriting anything
@@ -33,8 +39,9 @@ class Main(Camera.Camera, Config.Config):
         if self.save_to_video:
             self.video_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "{}".format(self.camera_config["video_format"])) for i, name in enumerate(self.camera_config["cam_names"])]
             #self.video_files_names = [os.path.join(self.experiment_folder, self.experiment_name + "_cam{}{}".format(i, self.camera_config["video_format"])) for i in np.arange(self.camera_config["n_cameras"])]
-            self.video_data_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "_VideoData") for i, name in enumerate(self.camera_config["cam_names"])]
-            self.video_data_fps_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "_FPSData") for i, name in enumerate(self.camera_config["cam_names"])]
+            self.video_data_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_VideoData")]
+            self.video_data_fps_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_FPSData")]
+            self.video_data_timestamps_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_Timestamps")]
 
             # Check if they exist already
             for vid in self.video_files_names:

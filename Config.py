@@ -1,10 +1,14 @@
 #from utils.constants import *
 import time
 import serial
-
+import GetFileInfo
+import colorama
+#import Main
+colorama.init()
 
 # Define a config class with all the options for data acquisition and post-hoc analysis
 class Config:
+
     """
         ############## EXPERIMENT CONFIG  ####################
     """
@@ -21,7 +25,14 @@ class Config:
     #experiment_folder = "C:\\Users\\Holly Morley\\Dropbox (UCL - SWC)\\Videos" + date
     #experiment_folder = "C:\\Users\\Holly Morley\\Dropbox (UCL - SWC)\\APA Project\\Data\\Behaviour\\Transparent_treadmill_Walking\\test_videos\\" + date  # ? This should be changed for every experiment to avoid overwriting
 
-    experiment_name = date + "250fps"  # YYMMDD_MOUSEID, all files for an experiment will start with this name
+    #experiment_name = date + "_" + "mousetest"  # YYMMDD_MOUSEID, all files for an experiment will start with this name
+    f = GetFileInfo.GetFileInfo()
+
+    expname = f.get_expname()
+    mouseID = f.get_mouseID()
+    mousename = f.get_mousename()
+
+    experiment_name = date + "_" + expname + "_" + mouseID + "_" + mousename
     trialnum_raw = 1
     trialnum = str(trialnum_raw)
     experiment_duration = None  # acquisition duration in seconds, alternatively set as None
@@ -30,10 +41,10 @@ class Config:
     if experiment_setup == 'Treadmill':
         acquisition_framerate = 166 #330  # fps of camera triggering -> NEED TO SPECIFY SLEEP TIME IN ARDUINO for frame triggering
     elif experiment_setup == 'DualBelt':
-        acquisition_framerate = 250
+        acquisition_framerate = 247 #247
 
 
-    overwrite_files = True # ! ATTENTION: this is useful for debug but could lead to overwriting experimental data
+    overwrite_files = False # ! ATTENTION: this is useful for debug but could lead to overwriting experimental data
     save_to_video = True  # ! decide if you want to save the videos or not
 
     """
@@ -97,17 +108,17 @@ class Config:
             "trigger_mode": True,  # hardware triggering
             "acquisition_side": {
                 "exposure": "300",
-                "frame_width": "1984",
+                "frame_width": "1920",
                 "frame_height": "230",
                 "gain": "0",
-                "frame_offset_y": "454",
-                "frame_offset_x": "0",
+                "frame_offset_y": "607",
+                "frame_offset_x": "64",
                 "frame_reverse_x": "true",
                 "frame_reverse_y": "true",
             },
             "acquisition_overhead": {
                 "exposure": "300",
-                "frame_width": "1664",
+                "frame_width": "1056",
                 "frame_height": "130",
                 "gain": "0",
                 "frame_offset_y": "383",
@@ -117,11 +128,11 @@ class Config:
             },
             "acquisition_front": {
                 "exposure": "300",
-                "frame_width": "328",
-                "frame_height": "400",
+                "frame_width": "296",
+                "frame_height": "320",
                 "gain": "17",
-                "frame_offset_y": "355",
-                "frame_offset_x": "612",
+                "frame_offset_y": "477",
+                "frame_offset_x": "652",
                 "frame_reverse_x": "false",
                 "frame_reverse_y": "false",
             },
