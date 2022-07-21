@@ -62,6 +62,14 @@ class Camera():
                                                               inputdict=indict)
 
                 print("Writing to: {}".format(file_name))
+
+            # # also set up timestamp csvs for each camera
+            # for t, tfile_name in enumerate(self.video_data_timestamps_names):
+            #     with open(tfile_name + ".csv", 'w', newline='') as file:
+            #         self.csvwriters[t] = csv.wtestriter(file)
+            #         self.csvwriters[t].writerow(
+            #             ["Frame number", "Timestamp"])
+
         else:
             self.cam_writers = {str(i): None for i in np.arange(self.camera_config["n_cameras"])}
 
@@ -191,6 +199,14 @@ class Camera():
                 if self.save_to_video:
                     writer.writeFrame(grab.Array)
                 pass
+
+            # check if buffer containing chunk data has been received
+            if py.PayloadType_ChunkData != grab.PayloadType:
+                raise py.RuntimeException("Unexpected payload type received.")
+            if grab.HasCRC() and grab.CheckCRC() == False:
+                raise py.RuntimeException("Image was damaged!")
+
+
         return grab
 
     def stream_videos(self, max_frames=None):
@@ -265,9 +281,6 @@ class Camera():
             print('RECORDING STARTED')
             self.exp_start_time = time.time() * 1000  # experiment starting time in milliseconds
 
-            # create csv file to store timestamps in
-
-
             while True:
                 #perf_start = time.time()
                 try:
@@ -282,13 +295,13 @@ class Camera():
                     grab = self.grab_frames()
                     #print('frame grabbed')
 
-                    # check if buffer containing chunk data has been received
-                    if py.PayloadType_ChunkData != grab.PayloadType:
-                        raise py.RuntimeException("Unexpected payload type received.")
-                    if grab.HasCRC() and grab.CheckCRC() == False:
-                        raise py.RuntimeException("Image was damaged!")
-                    #if genicam.IsReadable(grab.ChunkTimestamp):
-                    #    print("TimeStamp (Result): ", grab.ChunkTimestamp.Value)
+                    # # check if buffer containing chunk data has been received
+                    # if py.PayloadType_ChunkData != grab.PayloadType:
+                    #     raise py.RuntimeException("Unexpected payload type received.")
+                    # if grab.HasCRC() and grab.CheckCRC() == False:
+                    #     raise py.RuntimeException("Image was damaged!")
+                    # #if genicam.IsReadable(grab.ChunkTimestamp):
+                    # #    print("TimeStamp (Result): ", grab.ChunkTimestamp.Value)
 
                     # Update frame count
                     self.frame_count += 1
@@ -313,7 +326,7 @@ class Camera():
                     '''
                     loop_end = (time.time() - loop_start) * 1000
                     print("frame {} took {} milliseconds".format(self.frame_count, loop_end))
-
+                    
                     #create a csv file showing time taken to complete loop for each frame
                     with open(self.video_data_fps_files_names[0] + ".csv", 'w', newline='') as file:
                         writer = csv.writer(file)

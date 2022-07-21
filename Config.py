@@ -20,7 +20,7 @@ class Config:
         experiment_folder = "E:\\Data\\Behaviour\\Transparent_treadmill_Walking\\Videos\\" + date
     elif experiment_setup == 'DualBelt':
         #experiment_folder = "E:\\Data\\Behaviour\\DualTravellator\\Videos\\" + date
-        experiment_folder = "C:\\Experiment_development_and_testing\\Side_overhead_front_test\\videos\\" + date
+        experiment_folder = "C:\\Experiment_development_and_testing\\configuration_tests\\videos\\" + date
 
     #experiment_folder = "C:\\Users\\Holly Morley\\Dropbox (UCL - SWC)\\Videos" + date
     #experiment_folder = "C:\\Users\\Holly Morley\\Dropbox (UCL - SWC)\\APA Project\\Data\\Behaviour\\Transparent_treadmill_Walking\\test_videos\\" + date  # ? This should be changed for every experiment to avoid overwriting
@@ -112,17 +112,17 @@ class Config:
                 "frame_height": "230",
                 "gain": "0",
                 "frame_offset_y": "607",
-                "frame_offset_x": "64",
+                "frame_offset_x": "0", #"64",
                 "frame_reverse_x": "true",
                 "frame_reverse_y": "true",
             },
             "acquisition_overhead": {
                 "exposure": "300",
-                "frame_width": "1056",
-                "frame_height": "130",
+                "frame_width": "992",#"1056",
+                "frame_height": "116", #"130",
                 "gain": "0",
-                "frame_offset_y": "383",
-                "frame_offset_x": "288",
+                "frame_offset_y": "914", #"383",
+                "frame_offset_x": "608", #"288",
                 "frame_reverse_x": "true",
                 "frame_reverse_y": "false",
             },

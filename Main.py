@@ -11,14 +11,16 @@ import Camera
 import Config
 import GetFileInfo as get
 from hmutils import file_utils
+
+
 # from fcutils.file_io import utils
 
 class Main(Camera.Camera, Config.Config):
 
     def __init__(self):
         super().__init__()
-        #Config.__init__(self)  # load the config paramaters
-        #Camera.__init__(self)
+        # Config.__init__(self)  # load the config paramaters
+        # Camera.__init__(self)
 
     def setup_experiment_files(self):
         # Get file information
@@ -37,11 +39,19 @@ class Main(Camera.Camera, Config.Config):
 
         # Create files for videos
         if self.save_to_video:
-            self.video_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(name) + "_" + self.trialnum + "{}".format(self.camera_config["video_format"])) for i, name in enumerate(self.camera_config["cam_names"])]
-            #self.video_files_names = [os.path.join(self.experiment_folder, self.experiment_name + "_cam{}{}".format(i, self.camera_config["video_format"])) for i in np.arange(self.camera_config["n_cameras"])]
-            self.video_data_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_VideoData")]
-            self.video_data_fps_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_FPSData")]
-            self.video_data_timestamps_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_Timestamps")]
+            self.video_files_names = [os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_{}".format(
+                name) + "_" + self.trialnum + "{}".format(self.camera_config["video_format"])) for i, name in
+                                      enumerate(self.camera_config["cam_names"])]
+            # self.video_files_names = [os.path.join(self.experiment_folder, self.experiment_name + "_cam{}{}".format(i, self.camera_config["video_format"])) for i in np.arange(self.camera_config["n_cameras"])]
+            self.video_data_files_names = [
+                os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_VideoData")]
+            self.video_data_fps_files_names = [
+                os.path.join(self.experiment_folder, "HM_" + self.experiment_name + "_" + self.trialnum + "_FPSData")]
+            self.video_data_timestamps_names = [os.path.join(self.experiment_folder,
+                                                             "HM_" + self.experiment_name + "_{}".format(
+                                                                 name) + "_" + self.trialnum + "{}".format(
+                                                                 self.camera_config["video_format"]) + "_Timestamps")
+                                                for i, name in enumerate(self.camera_config["cam_names"])]
 
             # Check if they exist already
             for vid in self.video_files_names:
@@ -62,7 +72,6 @@ class Main(Camera.Camera, Config.Config):
                                                                    self.frame_count,
                                                                    round(self.frame_count / exp_duration, 2)))
 
-
         with open(self.video_data_files_names[0] + ".csv", 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(
@@ -71,8 +80,8 @@ class Main(Camera.Camera, Config.Config):
             writer.writerow([self.frame_count, exp_duration, self.acquisition_framerate,
                              int(exp_duration * self.acquisition_framerate), round(self.frame_count / exp_duration, 2)])
 
-
-        start_again = input("\n\nTo record another trial with this mouse, press 'y'.\nTo stop the experiment, press 'n'.")
+        start_again = input(
+            "\n\nTo record another trial with this mouse, press 'y'.\nTo stop the experiment, press 'n'.")
         start_again = start_again.strip().lower()
         if start_again == 'y':
             print("next trial starting...")
@@ -86,9 +95,8 @@ class Main(Camera.Camera, Config.Config):
             print("exp closed")
             # Close pylon windows and ffmpeg writers
             os.system('clear')
-            #self.close_pylon_windows()
+            # self.close_pylon_windows()
             self.close_ffmpeg_writers()
-
 
     def start_experiment(self):
         self.parallel_processes = []  # store all the parallel processes
@@ -97,7 +105,7 @@ class Main(Camera.Camera, Config.Config):
         self.start_cameras()
 
         ## Start streaming videos
-        #self.exp_start_time = time.time() * 1000  # experiment starting time in milliseconds # ** MOVED TO CAMERA.PY INTO STREAM_VIDEOS AND STREAM_VIDEOS_KEYBOARD BECAUSE RECORDING IS NOW CONDITIONAL
+        # self.exp_start_time = time.time() * 1000  # experiment starting time in milliseconds # ** MOVED TO CAMERA.PY INTO STREAM_VIDEOS AND STREAM_VIDEOS_KEYBOARD BECAUSE RECORDING IS NOW CONDITIONAL
 
         self.stream_videos_keyboard()  # choose between stream_videos() or stream_videos_keyboard()
         self.terminate_experiment()
